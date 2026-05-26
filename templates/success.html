@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Cadastro enviado | J&T Express{% endblock %}
+
+{% block body %}
+<header class="topbar centered">
+  <a class="brand" href="{{ url_for('index') }}" aria-label="J&T Express">
+    <img src="{{ url_for('static', filename='icons/jt-logo.svg') }}" alt="J&T Express" />
+  </a>
+</header>
+
+<main class="page page-center">
+  <section class="result-card reveal">
+    <div class="success-mark">✓</div>
+
+    <span class="eyebrow">Recebido com sucesso</span>
+    <h1>Cadastro enviado</h1>
+    <p>As informações foram registradas em {{ submission.created_date }} às {{ submission.created_time }}.</p>
+
+    <div class="result-meta">
+      <span>ID: <strong>{{ submission.id }}</strong></span>
+      <span>GitHub: <strong>{{ 'Ativo' if submission.storage_status.github else 'Local/pendente' }}</strong></span>
+      <span>Anexos: <strong>{{ 'Cloudflare R2' if submission.storage_status.cloudflare_r2 else 'Local' }}</strong></span>
+    </div>
+
+    <div class="result-actions">
+      <a class="btn btn-primary" href="{{ url_for('index') }}">Novo cadastro</a>
+      <a class="btn btn-ghost" href="{{ url_for('admin_panel') }}">Painel admin</a>
+    </div>
+  </section>
+</main>
+{% endblock %}

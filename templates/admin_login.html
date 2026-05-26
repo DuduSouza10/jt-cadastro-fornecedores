@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Login Admin | J&T Express{% endblock %}
+
+{% block body %}
+<header class="topbar centered">
+  <a class="brand" href="{{ url_for('index') }}" aria-label="J&T Express">
+    <img src="{{ url_for('static', filename='icons/jt-logo.svg') }}" alt="J&T Express" />
+  </a>
+</header>
+
+<main class="page page-center">
+  <form class="login-card reveal" method="POST">
+    <span class="eyebrow">Área restrita</span>
+    <h1>Painel admin</h1>
+    <p>Entre com o usuário e senha para visualizar os cadastros enviados.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-stack compact" aria-live="polite">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <label class="field single">
+      <span>Usuário</span>
+      <input type="text" name="username" placeholder="Digite o usuário" required autofocus />
+    </label>
+
+    <label class="field single">
+      <span>Senha</span>
+      <input type="password" name="password" placeholder="Digite a senha" required />
+    </label>
+
+    <button class="btn btn-primary full" type="submit">Entrar</button>
+
+    <a class="back-link" href="{{ url_for('index') }}">Voltar para o formulário</a>
+  </form>
+</main>
+{% endblock %}

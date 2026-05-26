@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Detalhes do cadastro | J&T Express{% endblock %}
+
+{% block body %}
+<header class="topbar admin-topbar">
+  <a class="brand" href="{{ url_for('index') }}" aria-label="J&T Express">
+    <img src="{{ url_for('static', filename='icons/jt-logo.svg') }}" alt="J&T Express" />
+  </a>
+
+  <div class="admin-actions">
+    <a href="{{ url_for('admin_panel') }}" class="btn btn-ghost small">Voltar ao painel</a>
+    <a href="{{ url_for('admin_report') }}" class="btn btn-primary small">Relatório geral</a>
+    <a href="{{ url_for('admin_logout') }}" class="btn btn-dark small">Sair</a>
+  </div>
+</header>
+
+<main class="page detail-page">
+  <section class="detail-hero reveal">
+    <div>
+      <span class="eyebrow">Cadastro #{{ submission.id }}</span>
+      <h1>{{ submission.data.get('nome_empresa', '-') }}</h1>
+      <p>Preenchido em {{ submission.created_date }} às {{ submission.created_time }}.</p>
+    </div>
+
+    <div class="status-chips">
+      <span>{{ 'GitHub ativo' if submission.storage_status.github else 'GitHub local/pendente' }}</span>
+      <span>{{ 'Cloudflare R2' if submission.storage_status.cloudflare_r2 else 'Arquivos locais' }}</span>
+    </div>
+  </section>
+
+  <section class="detail-grid reveal">
+    {% for section in FIELD_SECTIONS %}
+      <article class="detail-section">
+        <h2>{{ section.title }}</h2>
+
+        <div class="detail-fields">
+          {% for field in section.fields %}
+            {% set field_value = submission.data.get(field.name, '') %}
+            <div class="detail-item {% if field.wide %}wide{% endif %}">
+              <span>{{ field.label }}</span>
+
+              <div class="copy-row">
+                <strong>{{ field_value or '-' }}</strong>
+
+                <button
+                  type="button"
+                  class="copy-btn"
+                  data-copy="{{ field_value or '-' }}"
+                  title="Copiar resposta"
+                >
+                  Copiar
+                </button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </article>
+    {% endfor %}
+
+    <article class="detail-section wide-section">
+      <h2>Anexos</h2>
+
+      <div class="attachment-list">
+        {% for key, label in UPLOAD_FIELDS.items() %}
+          {% set attachment = submission.attachments.get(key) %}
+
+          <div class="attachment-card">
+            <div>
+              <strong>{{ label }}</strong>
+              <span>{{ attachment.original_name if attachment else 'Não enviado' }}</span>
+            </div>
+
+            <div class="attachment-actions">
+              {% if attachment and attachment.url %}
+                <a href="{{ attachment.url }}" target="_blank" rel="noopener">Abrir</a>
+              {% endif %}
+
+              {% if attachment and (attachment.download_url or attachment.url) %}
+                <a href="{{ attachment.download_url or attachment.url }}" download>Baixar</a>
+              {% elif attachment %}
+                <em>Sem URL pública configurada</em>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </article>
+  </section>
+</main>
+{% endblock %}

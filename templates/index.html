@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Cadastro de Fornecedor | J&T Express{% endblock %}
+
+{% block body %}
+<header class="topbar">
+  <a class="brand" href="{{ url_for('index') }}" aria-label="J&T Express">
+    <img src="{{ url_for('static', filename='icons/jt-logo.svg') }}" alt="J&T Express" />
+  </a>
+  <a href="{{ url_for('admin_panel') }}" class="admin-shortcut">Painel admin</a>
+</header>
+
+<main class="page page-form">
+  <section class="hero-card reveal">
+    <div>
+      <span class="eyebrow">Cadastro operacional</span>
+      <h1>Preenchimento de dados J&amp;T</h1>
+      <p>Preencha as informações do fornecedor, dados financeiros, operação, Feishu e anexos obrigatórios.</p>
+    </div>
+
+    <div class="hero-status">
+      <strong>5</strong>
+      <span>etapas organizadas</span>
+    </div>
+  </section>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-stack" aria-live="polite">
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <form id="jtForm" class="form-shell reveal" method="POST" action="{{ url_for('submit') }}" enctype="multipart/form-data" novalidate>
+    <nav class="step-nav" aria-label="Navegação das etapas">
+      {% for section in FIELD_SECTIONS %}
+        <button type="button" class="step-pill {% if loop.first %}active{% endif %}" data-target="{{ section.key }}">
+          <span>{{ loop.index }}</span>
+          {{ section.title }}
+        </button>
+      {% endfor %}
+
+      <button type="button" class="step-pill" data-target="anexos">
+        <span>{{ FIELD_SECTIONS|length + 1 }}</span>
+        Anexos
+      </button>
+    </nav>
+
+    {% for section in FIELD_SECTIONS %}
+      <section class="form-section" id="{{ section.key }}" data-section>
+        <div class="section-heading">
+          <div>
+            <span class="section-index">Etapa {{ loop.index }}</span>
+            <h2>{{ section.title }}</h2>
+            <p>{{ section.description }}</p>
+          </div>
+        </div>
+
+        <div class="fields-grid">
+          {% for field in section.fields %}
+            {% if field.type == 'hidden' %}
+              <input
+                type="hidden"
+                name="{{ field.name }}"
+                value="{{ field.value|default('') }}"
+              />
+            {% else %}
+              <label class="field {% if field.wide %}field-wide{% endif %}">
+                <span>{{ field.label }} {% if field.required %}<b>*</b>{% endif %}</span>
+
+                {% if field.type == 'select' %}
+                  <select name="{{ field.name }}" {% if field.required %}required{% endif %}>
+                    <option value="">Selecione</option>
+
+                    {% for option in field.options %}
+                      <option value="{{ option }}">{{ option }}</option>
+                    {% endfor %}
+                  </select>
+                {% else %}
+                  <input
+                    type="{{ field.type }}"
+                    name="{{ field.name }}"
+                    placeholder="Digite {{ field.label|lower }}"
+                    value="{{ field.value|default('') }}"
+                    {% if field.required %}required{% endif %}
+                    {% if field.mask %}data-mask="{{ field.mask }}"{% endif %}
+                  />
+                {% endif %}
+              </label>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </section>
+    {% endfor %}
+
+    <section class="form-section" id="anexos" data-section>
+      <div class="section-heading">
+        <div>
+          <span class="section-index">Etapa {{ FIELD_SECTIONS|length + 1 }}</span>
+          <h2>Anexos obrigatórios</h2>
+          <p>Envie o cartão CNPJ e o Sintegra Card. Aceita PDF, PNG, JPG, JPEG ou WEBP.</p>
+        </div>
+      </div>
+
+      <div class="upload-grid">
+        <label class="upload-card">
+          <input type="file" name="anexo_cnpj" accept=".pdf,.png,.jpg,.jpeg,.webp" required />
+          <span class="upload-icon">+</span>
+          <strong>CNPJ *</strong>
+          <small>Clique para anexar o cartão CNPJ</small>
+          <em data-file-name>Nenhum arquivo selecionado</em>
+        </label>
+
+        <label class="upload-card">
+          <input type="file" name="anexo_sintegra_card" accept=".pdf,.png,.jpg,.jpeg,.webp" required />
+          <span class="upload-icon">+</span>
+          <strong>Sintegra Card *</strong>
+          <small>Clique para anexar o Sintegra Card</small>
+          <em data-file-name>Nenhum arquivo selecionado</em>
+        </label>
+      </div>
+    </section>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-ghost" id="btnPrev">Voltar</button>
+      <button type="button" class="btn btn-dark" id="btnNext">Próxima etapa</button>
+      <button type="submit" class="btn btn-primary" id="btnSubmit">Enviar cadastro</button>
+    </div>
+  </form>
+</main>
+{% endblock %}

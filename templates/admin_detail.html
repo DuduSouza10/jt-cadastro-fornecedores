@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Painel Admin | J&T Express{% endblock %}
+
+{% block body %}
+<header class="topbar admin-topbar">
+  <a class="brand" href="{{ url_for('index') }}" aria-label="J&T Express">
+    <img src="{{ url_for('static', filename='icons/jt-logo.svg') }}" alt="J&T Express" />
+  </a>
+
+  <div class="admin-actions">
+    <a href="{{ url_for('index') }}" class="btn btn-ghost small">Novo cadastro</a>
+    <a href="{{ url_for('admin_report') }}" class="btn btn-primary small">Relatório geral</a>
+    <a href="{{ url_for('admin_logout') }}" class="btn btn-dark small">Sair</a>
+  </div>
+</header>
+
+<main class="page admin-page">
+  <section class="admin-hero reveal">
+    <div>
+      <span class="eyebrow">Painel administrativo</span>
+      <h1>Cadastros enviados</h1>
+      <p>Organizado por dia, mês e ano de preenchimento, mantendo a ordem de envio dentro de cada data.</p>
+    </div>
+
+    <div class="admin-stats">
+      <div>
+        <strong>{{ total }}</strong>
+        <span>cadastro(s)</span>
+      </div>
+
+      <div>
+        <strong>{{ 'ON' if github_enabled else 'OFF' }}</strong>
+        <span>GitHub</span>
+      </div>
+
+      <div>
+        <strong>{{ 'ON' if r2_enabled else 'OFF' }}</strong>
+        <span>Cloudflare R2</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="export-panel reveal">
+    <div>
+      <span class="eyebrow">Exportação</span>
+      <h2>Exportar cadastros em XLSX</h2>
+      <p>Selecione um período para baixar uma planilha com cada resposta separada por colunas.</p>
+    </div>
+
+    <form class="export-form" method="GET" action="{{ url_for('admin_export_xlsx') }}">
+      <label class="field">
+        <span>Data inicial</span>
+        <input type="date" name="start_date" />
+      </label>
+
+      <label class="field">
+        <span>Data final</span>
+        <input type="date" name="end_date" />
+      </label>
+
+      <button class="btn btn-primary" type="submit">Baixar XLSX</button>
+    </form>
+  </section>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-stack" aria-live="polite">
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <section class="admin-list reveal">
+    {% if grouped %}
+      {% for date_key, items in grouped.items() %}
+        <div class="date-group">
+          <div class="date-heading">
+            <h2>{{ date_key }}</h2>
+            <span>{{ items|length }} envio(s)</span>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ordem</th>
+                  <th>Horário</th>
+                  <th>Empresa</th>
+                  <th>CNPJ</th>
+                  <th>Responsável</th>
+                  <th>Feishu</th>
+                  <th>Ação</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {% for item in items %}
+                  <tr>
+                    <td>#{{ '%03d'|format(loop.index) }}</td>
+                    <td>{{ item.created_time }}</td>
+                    <td>{{ item.data.get('nome_empresa', '-') }}</td>
+                    <td>{{ item.data.get('cnpj', '-') }}</td>
+                    <td>{{ item.data.get('responsavel', '-') }}</td>
+                    <td>{{ item.data.get('feishu_nome', '-') }}</td>
+                    <td>
+                      <a class="table-link" href="{{ url_for('admin_submission_detail', submission_id=item.id) }}">
+                        Ver detalhes
+                      </a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <strong>Nenhum cadastro enviado ainda.</strong>
+        <span>Assim que alguém preencher o formulário, ele aparecerá aqui.</span>
+      </div>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

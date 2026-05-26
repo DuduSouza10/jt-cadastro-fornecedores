@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}{{ APP_NAME }}{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('static', filename='icons/favicon.svg') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-orb orb-3"></div>
+
+  {% block body %}{% endblock %}
+
+  <footer class="site-footer">
+    <div class="footer-secure-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M12 2.5L20 5.8V11.4C20 16.45 16.58 20.96 12 22C7.42 20.96 4 16.45 4 11.4V5.8L12 2.5Z" />
+        <path d="M9.25 12.15L11.15 14.05L15.1 10.1" />
+      </svg>
+    </div>
+
+    <div class="footer-info">
+      <strong>J&amp;T Express Brazil LTDA</strong>
+      <span>CNPJ: 42.584.754/0001-86</span>
+      <span>Developed by: Eduardo Rodrigues</span>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
