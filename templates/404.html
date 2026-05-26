@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Página não encontrada | J&T Express{% endblock %}
+
+{% block body %}
+<header class="topbar">
+  <a class="brand" href="{{ url_for('index') }}" aria-label="J&T Express">
+    <img src="{{ url_for('static', filename='icons/jt-logo.svg') }}" alt="J&T Express" />
+  </a>
+  <a href="{{ url_for('admin_panel') }}" class="admin-shortcut">Painel admin</a>
+</header>
+
+<main class="page">
+  <section class="hero-card reveal">
+    <div>
+      <span class="eyebrow">Erro 404</span>
+      <h1>Página não encontrada</h1>
+      <p>O link acessado não existe ou o arquivo não está mais disponível.</p>
+    </div>
+    <a href="{{ url_for('index') }}" class="btn btn-primary">Voltar ao início</a>
+  </section>
+</main>
+{% endblock %}

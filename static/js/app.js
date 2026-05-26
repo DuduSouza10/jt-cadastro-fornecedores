@@ -221,14 +221,14 @@
   });
 
   document.querySelectorAll("form").forEach((form) => {
-    form.addEventListener("submit", () => {
-      const button = form.querySelector('button[type="submit"]');
+    form.addEventListener("submit", (event) => {
+      const button = event.submitter || form.querySelector('button[type="submit"]');
 
       if (!button) return;
 
       button.disabled = true;
       button.dataset.originalText = button.textContent;
-      button.textContent = "Enviando...";
+      button.textContent = form.classList.contains("export-form") ? "Processando..." : "Enviando...";
 
       if (form.classList.contains("export-form")) {
         setTimeout(() => {

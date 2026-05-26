@@ -1,26 +1,71 @@
 {% extends "base.html" %}
-{% block title %}Cadastro de Fornecedor | J&T Express{% endblock %}
+{% block title %}Painel Admin | J&T Express{% endblock %}
 
 {% block body %}
-<header class="topbar">
+<header class="topbar admin-topbar">
   <a class="brand" href="{{ url_for('index') }}" aria-label="J&T Express">
     <img src="{{ url_for('static', filename='icons/jt-logo.svg') }}" alt="J&T Express" />
   </a>
-  <a href="{{ url_for('admin_panel') }}" class="admin-shortcut">Painel admin</a>
+
+  <div class="admin-actions">
+    <a href="{{ url_for('index') }}" class="btn btn-ghost small">Novo cadastro</a>
+    <a href="{{ url_for('admin_report', start_date=start_date, end_date=end_date) }}" class="btn btn-primary small">Relatório geral</a>
+    <a href="{{ url_for('admin_logout') }}" class="btn btn-dark small">Sair</a>
+  </div>
 </header>
 
-<main class="page page-form">
-  <section class="hero-card reveal">
+<main class="page admin-page">
+  <section class="admin-hero reveal">
     <div>
-      <span class="eyebrow">Cadastro operacional</span>
-      <h1>Preenchimento de dados J&amp;T</h1>
-      <p>Preencha as informações do fornecedor, dados financeiros, operação, Feishu e anexos obrigatórios.</p>
+      <span class="eyebrow">Painel administrativo</span>
+      <h1>Cadastros enviados</h1>
+      <p>Visualize os fornecedores enviados, copie respostas, baixe anexos e exporte os dados em XLSX por período.</p>
     </div>
 
-    <div class="hero-status">
-      <strong>5</strong>
-      <span>etapas organizadas</span>
+    <div class="admin-stats">
+      <div>
+        <strong>{{ total }}</strong>
+        <span>cadastro(s) total</span>
+      </div>
+
+      <div>
+        <strong>{{ preview_total }}</strong>
+        <span>no período</span>
+      </div>
+
+      <div>
+        <strong>{{ 'ON' if github_enabled else 'OFF' }}</strong>
+        <span>GitHub</span>
+      </div>
+
+      <div>
+        <strong>{{ 'ON' if r2_enabled else 'OFF' }}</strong>
+        <span>Cloudflare R2</span>
+      </div>
     </div>
+  </section>
+
+  <section class="export-panel reveal">
+    <div>
+      <span class="eyebrow">Prévia e exportação</span>
+      <h2>Filtrar período e gerar XLSX</h2>
+      <p>Use o filtro para conferir abaixo o que será exportado. O XLSX sai com cada resposta separada por coluna.</p>
+    </div>
+
+    <form class="export-form" method="GET" action="{{ url_for('admin_panel') }}">
+      <label class="field">
+        <span>Data inicial</span>
+        <input type="date" name="start_date" value="{{ start_date }}" />
+      </label>
+
+      <label class="field">
+        <span>Data final</span>
+        <input type="date" name="end_date" value="{{ end_date }}" />
+      </label>
+
+      <button class="btn btn-dark" type="submit">Pré-visualizar</button>
+      <button class="btn btn-primary" type="submit" formaction="{{ url_for('admin_export_xlsx') }}">Baixar XLSX</button>
+    </form>
   </section>
 
   {% with messages = get_flashed_messages(with_categories=true) %}
@@ -33,101 +78,84 @@
     {% endif %}
   {% endwith %}
 
-  <form id="jtForm" class="form-shell reveal" method="POST" action="{{ url_for('submit') }}" enctype="multipart/form-data" novalidate>
-    <nav class="step-nav" aria-label="Navegação das etapas">
-      {% for section in FIELD_SECTIONS %}
-        <button type="button" class="step-pill {% if loop.first %}active{% endif %}" data-target="{{ section.key }}">
-          <span>{{ loop.index }}</span>
-          {{ section.title }}
-        </button>
-      {% endfor %}
+  <section class="admin-list reveal">
+    {% if grouped %}
+      {% for date_key, items in grouped.items() %}
+        <div class="date-group">
+          <div class="date-heading">
+            <h2>{{ date_key }}</h2>
+            <span>{{ items|length }} envio(s)</span>
+          </div>
 
-      <button type="button" class="step-pill" data-target="anexos">
-        <span>{{ FIELD_SECTIONS|length + 1 }}</span>
-        Anexos
-      </button>
-    </nav>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ordem</th>
+                  <th>Horário</th>
+                  <th>Empresa</th>
+                  <th>CNPJ</th>
+                  <th>UF</th>
+                  <th>Responsável</th>
+                  <th>Feishu</th>
+                  <th>Anexos</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
 
-    {% for section in FIELD_SECTIONS %}
-      <section class="form-section" id="{{ section.key }}" data-section>
-        <div class="section-heading">
-          <div>
-            <span class="section-index">Etapa {{ loop.index }}</span>
-            <h2>{{ section.title }}</h2>
-            <p>{{ section.description }}</p>
+              <tbody>
+                {% for item in items %}
+                  {% set resumo %}ID: {{ item.id }}
+Data: {{ item.created_date }} {{ item.created_time }}
+Empresa: {{ item.data.get('nome_empresa', '-') }}
+CNPJ: {{ item.data.get('cnpj', '-') }}
+UF: {{ item.data.get('uf_pertencente', '-') }}
+Responsável: {{ item.data.get('responsavel', '-') }}
+Feishu: {{ item.data.get('feishu_nome', '-') }}{% endset %}
+                  <tr>
+                    <td>#{{ '%03d'|format(loop.index) }}</td>
+                    <td>{{ item.created_time }}</td>
+                    <td>{{ item.data.get('nome_empresa', '-') }}</td>
+                    <td>
+                      <div class="copy-row table-copy-row">
+                        <span>{{ item.data.get('cnpj', '-') }}</span>
+                        <button type="button" class="copy-btn mini" data-copy="{{ item.data.get('cnpj', '-') }}">Copiar</button>
+                      </div>
+                    </td>
+                    <td>{{ item.data.get('uf_pertencente', '-') }}</td>
+                    <td>{{ item.data.get('responsavel', '-') }}</td>
+                    <td>{{ item.data.get('feishu_nome', '-') }}</td>
+                    <td>
+                      <div class="attachment-actions compact-actions">
+                        {% for key, label in UPLOAD_FIELDS.items() %}
+                          {% set attachment = item.attachments.get(key) %}
+                          {% if attachment and (attachment.download_url or attachment.url) %}
+                            <a href="{{ attachment.download_url or attachment.url }}" target="_blank" rel="noopener">{{ label }}</a>
+                          {% else %}
+                            <em>{{ label }} indisponível</em>
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                    </td>
+                    <td>
+                      <div class="table-actions">
+                        <a class="table-link" href="{{ url_for('admin_submission_detail', submission_id=item.id) }}">Ver detalhes</a>
+                        <button type="button" class="copy-btn mini" data-copy="{{ resumo|trim|e }}">Copiar resumo</button>
+                      </div>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
           </div>
         </div>
-
-        <div class="fields-grid">
-          {% for field in section.fields %}
-            {% if field.type == 'hidden' %}
-              <input
-                type="hidden"
-                name="{{ field.name }}"
-                value="{{ field.value|default('') }}"
-              />
-            {% else %}
-              <label class="field {% if field.wide %}field-wide{% endif %}">
-                <span>{{ field.label }} {% if field.required %}<b>*</b>{% endif %}</span>
-
-                {% if field.type == 'select' %}
-                  <select name="{{ field.name }}" {% if field.required %}required{% endif %}>
-                    <option value="">Selecione</option>
-
-                    {% for option in field.options %}
-                      <option value="{{ option }}">{{ option }}</option>
-                    {% endfor %}
-                  </select>
-                {% else %}
-                  <input
-                    type="{{ field.type }}"
-                    name="{{ field.name }}"
-                    placeholder="Digite {{ field.label|lower }}"
-                    value="{{ field.value|default('') }}"
-                    {% if field.required %}required{% endif %}
-                    {% if field.mask %}data-mask="{{ field.mask }}"{% endif %}
-                  />
-                {% endif %}
-              </label>
-            {% endif %}
-          {% endfor %}
-        </div>
-      </section>
-    {% endfor %}
-
-    <section class="form-section" id="anexos" data-section>
-      <div class="section-heading">
-        <div>
-          <span class="section-index">Etapa {{ FIELD_SECTIONS|length + 1 }}</span>
-          <h2>Anexos obrigatórios</h2>
-          <p>Envie o cartão CNPJ e o Sintegra Card. Aceita PDF, PNG, JPG, JPEG ou WEBP.</p>
-        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <strong>Nenhum cadastro encontrado.</strong>
+        <span>Assim que alguém preencher o formulário, ou quando o período selecionado tiver envios, eles aparecerão aqui.</span>
       </div>
-
-      <div class="upload-grid">
-        <label class="upload-card">
-          <input type="file" name="anexo_cnpj" accept=".pdf,.png,.jpg,.jpeg,.webp" required />
-          <span class="upload-icon">+</span>
-          <strong>CNPJ *</strong>
-          <small>Clique para anexar o cartão CNPJ</small>
-          <em data-file-name>Nenhum arquivo selecionado</em>
-        </label>
-
-        <label class="upload-card">
-          <input type="file" name="anexo_sintegra_card" accept=".pdf,.png,.jpg,.jpeg,.webp" required />
-          <span class="upload-icon">+</span>
-          <strong>Sintegra Card *</strong>
-          <small>Clique para anexar o Sintegra Card</small>
-          <em data-file-name>Nenhum arquivo selecionado</em>
-        </label>
-      </div>
-    </section>
-
-    <div class="form-actions">
-      <button type="button" class="btn btn-ghost" id="btnPrev">Voltar</button>
-      <button type="button" class="btn btn-dark" id="btnNext">Próxima etapa</button>
-      <button type="submit" class="btn btn-primary" id="btnSubmit">Enviar cadastro</button>
-    </div>
-  </form>
+    {% endif %}
+  </section>
 </main>
 {% endblock %}

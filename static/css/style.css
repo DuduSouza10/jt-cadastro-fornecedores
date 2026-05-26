@@ -1865,3 +1865,52 @@ tbody tr:hover {
     page-break-inside: avoid;
   }
 }
+.table-actions,
+.detail-action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.detail-action-buttons {
+  justify-content: flex-end;
+}
+
+.table-copy-row {
+  min-width: 170px;
+}
+
+.copy-btn.mini {
+  min-height: 30px;
+  padding: 0 10px;
+  font-size: 11px;
+}
+
+.compact-actions {
+  min-width: 220px;
+  justify-content: flex-start;
+}
+
+.compact-actions a {
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: 11px;
+}
+
+.compact-actions em {
+  color: var(--muted);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+@media (max-width: 720px) {
+  .detail-action-buttons {
+    justify-content: stretch;
+  }
+
+  .detail-action-buttons .btn {
+    width: 100%;
+  }
+}

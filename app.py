@@ -988,13 +988,20 @@ def download_uploaded_file(filepath: str):
 @app.route("/admin", methods=["GET"])
 @admin_required
 def admin_panel():
+    start_date = request.args.get("start_date", "").strip()
+    end_date = request.args.get("end_date", "").strip()
+
     submissions = load_submissions()
-    grouped = group_submissions_by_date(submissions)
+    filtered = filter_submissions_by_period(submissions, start_date, end_date) if (start_date or end_date) else submissions
+    grouped = group_submissions_by_date(filtered)
 
     return render_template(
         "admin.html",
         grouped=grouped,
         total=len(submissions),
+        preview_total=len(filtered),
+        start_date=start_date,
+        end_date=end_date,
         github_enabled=github_configured(),
         r2_enabled=r2_configured(),
     )
@@ -1003,13 +1010,19 @@ def admin_panel():
 @app.route("/admin/report", methods=["GET"])
 @admin_required
 def admin_report():
+    start_date = request.args.get("start_date", "").strip()
+    end_date = request.args.get("end_date", "").strip()
+
     submissions = load_submissions()
-    grouped = group_submissions_by_date(submissions)
+    filtered = filter_submissions_by_period(submissions, start_date, end_date) if (start_date or end_date) else submissions
+    grouped = group_submissions_by_date(filtered)
 
     return render_template(
         "admin_report.html",
         grouped=grouped,
-        total=len(submissions),
+        total=len(filtered),
+        start_date=start_date,
+        end_date=end_date,
     )
 
 

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Painel Admin | J&T Express{% endblock %}
+{% block title %}Detalhes do cadastro | J&T Express{% endblock %}
 
 {% block body %}
 <header class="topbar admin-topbar">
@@ -8,120 +8,109 @@
   </a>
 
   <div class="admin-actions">
-    <a href="{{ url_for('index') }}" class="btn btn-ghost small">Novo cadastro</a>
+    <a href="{{ url_for('admin_panel') }}" class="btn btn-ghost small">Voltar ao painel</a>
     <a href="{{ url_for('admin_report') }}" class="btn btn-primary small">Relatório geral</a>
     <a href="{{ url_for('admin_logout') }}" class="btn btn-dark small">Sair</a>
   </div>
 </header>
 
-<main class="page admin-page">
-  <section class="admin-hero reveal">
+<main class="page detail-page">
+  <section class="detail-hero reveal">
     <div>
-      <span class="eyebrow">Painel administrativo</span>
-      <h1>Cadastros enviados</h1>
-      <p>Organizado por dia, mês e ano de preenchimento, mantendo a ordem de envio dentro de cada data.</p>
+      <span class="eyebrow">Cadastro #{{ submission.id }}</span>
+      <h1>{{ submission.data.get('nome_empresa', '-') }}</h1>
+      <p>Preenchido em {{ submission.created_date }} às {{ submission.created_time }}.</p>
     </div>
 
-    <div class="admin-stats">
-      <div>
-        <strong>{{ total }}</strong>
-        <span>cadastro(s)</span>
-      </div>
-
-      <div>
-        <strong>{{ 'ON' if github_enabled else 'OFF' }}</strong>
-        <span>GitHub</span>
-      </div>
-
-      <div>
-        <strong>{{ 'ON' if r2_enabled else 'OFF' }}</strong>
-        <span>Cloudflare R2</span>
-      </div>
+    <div class="status-chips">
+      <span>{{ 'GitHub ativo' if submission.storage_status.github else 'GitHub local/pendente' }}</span>
+      <span>{{ 'Cloudflare R2' if submission.storage_status.cloudflare_r2 else 'Arquivos locais' }}</span>
     </div>
   </section>
+
+  {% set texto_completo %}ID: {{ submission.id }}
+Data de preenchimento: {{ submission.created_date }}
+Horário de preenchimento: {{ submission.created_time }}
+{% for section in FIELD_SECTIONS %}
+
+{{ section.title }}
+{% for field in section.fields %}{{ field.label }}: {{ submission.data.get(field.name, '-') }}
+{% endfor %}{% endfor %}
+
+Anexos
+{% for key, label in UPLOAD_FIELDS.items() %}{% set attachment = submission.attachments.get(key) %}{{ label }}: {{ attachment.original_name if attachment else 'Não enviado' }}{% if attachment and (attachment.download_url or attachment.url) %} | {{ attachment.download_url or attachment.url }}{% endif %}
+{% endfor %}{% endset %}
 
   <section class="export-panel reveal">
     <div>
-      <span class="eyebrow">Exportação</span>
-      <h2>Exportar cadastros em XLSX</h2>
-      <p>Selecione um período para baixar uma planilha com cada resposta separada por colunas.</p>
+      <span class="eyebrow">Ações do cadastro</span>
+      <h2>Copiar respostas e baixar anexos</h2>
+      <p>Use “Copiar tudo” para levar todas as respostas deste envio de uma vez, ou copie campo por campo abaixo.</p>
     </div>
 
-    <form class="export-form" method="GET" action="{{ url_for('admin_export_xlsx') }}">
-      <label class="field">
-        <span>Data inicial</span>
-        <input type="date" name="start_date" />
-      </label>
-
-      <label class="field">
-        <span>Data final</span>
-        <input type="date" name="end_date" />
-      </label>
-
-      <button class="btn btn-primary" type="submit">Baixar XLSX</button>
-    </form>
+    <div class="detail-action-buttons">
+      <button type="button" class="btn btn-primary" data-copy="{{ texto_completo|trim|e }}">Copiar tudo</button>
+      <a class="btn btn-dark" href="{{ url_for('admin_export_xlsx', start_date=submission.created_at[:10], end_date=submission.created_at[:10]) }}">XLSX deste dia</a>
+    </div>
   </section>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div class="flash-stack" aria-live="polite">
-        {% for category, message in messages %}
-          <div class="flash flash-{{ category }}">{{ message }}</div>
+  <section class="detail-grid reveal">
+    {% for section in FIELD_SECTIONS %}
+      <article class="detail-section">
+        <h2>{{ section.title }}</h2>
+
+        <div class="detail-fields">
+          {% for field in section.fields %}
+            {% set field_value = submission.data.get(field.name, '') %}
+            <div class="detail-item {% if field.wide %}wide{% endif %}">
+              <span>{{ field.label }}</span>
+
+              <div class="copy-row">
+                <strong>{{ field_value or '-' }}</strong>
+
+                <button
+                  type="button"
+                  class="copy-btn"
+                  data-copy="{{ field_value or '-' }}"
+                  title="Copiar resposta"
+                >
+                  Copiar
+                </button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </article>
+    {% endfor %}
+
+    <article class="detail-section wide-section">
+      <h2>Anexos</h2>
+
+      <div class="attachment-list">
+        {% for key, label in UPLOAD_FIELDS.items() %}
+          {% set attachment = submission.attachments.get(key) %}
+
+          <div class="attachment-card">
+            <div>
+              <strong>{{ label }}</strong>
+              <span>{{ attachment.original_name if attachment else 'Não enviado' }}</span>
+            </div>
+
+            <div class="attachment-actions">
+              {% if attachment and attachment.url %}
+                <a href="{{ attachment.url }}" target="_blank" rel="noopener">Abrir</a>
+              {% endif %}
+
+              {% if attachment and (attachment.download_url or attachment.url) %}
+                <a href="{{ attachment.download_url or attachment.url }}" download>Baixar</a>
+              {% elif attachment %}
+                <em>Sem URL pública configurada</em>
+              {% endif %}
+            </div>
+          </div>
         {% endfor %}
       </div>
-    {% endif %}
-  {% endwith %}
-
-  <section class="admin-list reveal">
-    {% if grouped %}
-      {% for date_key, items in grouped.items() %}
-        <div class="date-group">
-          <div class="date-heading">
-            <h2>{{ date_key }}</h2>
-            <span>{{ items|length }} envio(s)</span>
-          </div>
-
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Ordem</th>
-                  <th>Horário</th>
-                  <th>Empresa</th>
-                  <th>CNPJ</th>
-                  <th>Responsável</th>
-                  <th>Feishu</th>
-                  <th>Ação</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {% for item in items %}
-                  <tr>
-                    <td>#{{ '%03d'|format(loop.index) }}</td>
-                    <td>{{ item.created_time }}</td>
-                    <td>{{ item.data.get('nome_empresa', '-') }}</td>
-                    <td>{{ item.data.get('cnpj', '-') }}</td>
-                    <td>{{ item.data.get('responsavel', '-') }}</td>
-                    <td>{{ item.data.get('feishu_nome', '-') }}</td>
-                    <td>
-                      <a class="table-link" href="{{ url_for('admin_submission_detail', submission_id=item.id) }}">
-                        Ver detalhes
-                      </a>
-                    </td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      {% endfor %}
-    {% else %}
-      <div class="empty-state">
-        <strong>Nenhum cadastro enviado ainda.</strong>
-        <span>Assim que alguém preencher o formulário, ele aparecerá aqui.</span>
-      </div>
-    {% endif %}
+    </article>
   </section>
 </main>
 {% endblock %}
