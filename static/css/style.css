@@ -1276,21 +1276,40 @@ tbody tr:hover {
   }
 
   td:nth-child(5)::before {
-    content: "Responsável";
+    content: "UF";
   }
 
   td:nth-child(6)::before {
-    content: "Feishu";
+    content: "Responsável";
   }
 
   td:nth-child(7)::before {
-    content: "Ação";
+    content: "Feishu";
+  }
+
+  td:nth-child(8)::before {
+    content: "Anexos";
+  }
+
+  td:nth-child(9)::before {
+    content: "Ações";
   }
 
   .table-link {
     width: auto;
     min-height: 36px;
     padding: 0 14px;
+  }
+
+  .compact-actions {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .compact-actions a,
+  .compact-actions em {
+    max-width: 100%;
+    word-break: break-word;
   }
 
   .detail-grid {

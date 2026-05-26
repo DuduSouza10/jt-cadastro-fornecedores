@@ -207,7 +207,7 @@ FIELD_SECTIONS = [
     {
         "key": "registro_cliente",
         "title": "Registro de cliente",
-        "description": "Informações financeiras e condições de pagamento do cliente.",
+        "description": "Informações financeiras e prazo de pagamento do cliente.",
         "fields": [
             {
                 "name": "nome_responsavel_financeiro",
@@ -230,12 +230,6 @@ FIELD_SECTIONS = [
                 "required": True,
             },
             {
-                "name": "ciclo_pagamento",
-                "label": "Ciclo de pagamento",
-                "type": "text",
-                "required": True,
-            },
-            {
                 "name": "prazo_pagamento",
                 "label": "Prazo de pagamento",
                 "type": "text",
@@ -246,7 +240,7 @@ FIELD_SECTIONS = [
     {
         "key": "franqueado_ativado",
         "title": "Franqueado ativado",
-        "description": "Dados operacionais, atendimento, SC responsável, região e rota dedicada.",
+        "description": "Dados operacionais, atendimento e rota dedicada.",
         "fields": [
             {
                 "name": "responsavel",
@@ -289,37 +283,6 @@ FIELD_SECTIONS = [
                 "required": True,
             },
             {
-                "name": "ponto_entrega_distribuicao",
-                "label": "Ponto de entrega e distribuição",
-                "type": "text",
-                "required": True,
-            },
-            {
-                "name": "ponto_distribuicao_mercadorias",
-                "label": "Ponto de distribuição de mercadorias",
-                "type": "text",
-                "required": True,
-            },
-            {
-                "name": "sc_faz_coletar",
-                "label": "SC que faz coletar",
-                "type": "text",
-                "required": True,
-            },
-            {
-                "name": "sc_fez_entregar",
-                "label": "SC - que fez entregar",
-                "type": "text",
-                "required": True,
-            },
-            {
-                "name": "rede_originalmente_pertencente_regiao",
-                "label": "Rede originalmente pertencente à região",
-                "type": "select",
-                "required": True,
-                "options": REGIAO_REDE_OPTIONS,
-            },
-            {
                 "name": "rota_dedicada",
                 "label": "Rota dedicada",
                 "type": "hidden",
@@ -353,12 +316,6 @@ FIELD_SECTIONS = [
                 "type": "text",
                 "required": True,
                 "mask": "phone",
-            },
-            {
-                "name": "feishu_numero_hub",
-                "label": "Nº HUB",
-                "type": "text",
-                "required": True,
             },
         ],
     },
@@ -427,8 +384,10 @@ FIELD_SECTIONS = [
 
 
 UPLOAD_FIELDS = {
-    "anexo_cnpj": "CNPJ",
-    "anexo_sintegra_card": "Sintegra Card",
+    "anexo_cnpj": "Cartão CNPJ",
+    "anexo_cartao_social_ccmei": "Cartão Social / CCMEI",
+    "anexo_sintegra_card": "Comprovante Sintegra",
+    "anexo_inscricao_municipal": "Inscrição Municipal",
 }
 
 

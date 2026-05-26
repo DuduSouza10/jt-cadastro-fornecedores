@@ -10,7 +10,7 @@ Site Flask para preenchimento de dados de fornecedor/franqueado, com tela admin 
   - Franqueado ativado
   - Criação de Feishu
   - Fornecedor Registrado (Empresa)
-  - Anexos obrigatórios: CNPJ e Sintegra Card
+  - Anexos obrigatórios: Cartão CNPJ, Cartão Social / CCMEI, Comprovante Sintegra e Inscrição Municipal
 - Tela admin com login e senha.
 - Listagem por dia/mês/ano, mantendo ordem de preenchimento dentro de cada data.
 - Visualização detalhada de cada cadastro.
@@ -94,7 +94,7 @@ Permissões mínimas do token: acesso de escrita ao repositório onde os JSON se
 
 ## Cloudflare R2 para anexos
 
-Se configurado, os anexos CNPJ e Sintegra Card serão enviados para o bucket R2.
+Se configurado, os anexos Cartão CNPJ, Cartão Social / CCMEI, Comprovante Sintegra e Inscrição Municipal serão enviados para o bucket R2.
 
 Variáveis necessárias:
 

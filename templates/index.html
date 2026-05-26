@@ -100,26 +100,20 @@
         <div>
           <span class="section-index">Etapa {{ FIELD_SECTIONS|length + 1 }}</span>
           <h2>Anexos obrigatórios</h2>
-          <p>Envie o cartão CNPJ e o Sintegra Card. Aceita PDF, PNG, JPG, JPEG ou WEBP.</p>
+          <p>Envie todos os anexos necessários. Aceita PDF, PNG, JPG, JPEG ou WEBP.</p>
         </div>
       </div>
 
       <div class="upload-grid">
-        <label class="upload-card">
-          <input type="file" name="anexo_cnpj" accept=".pdf,.png,.jpg,.jpeg,.webp" required />
-          <span class="upload-icon">+</span>
-          <strong>CNPJ *</strong>
-          <small>Clique para anexar o cartão CNPJ</small>
-          <em data-file-name>Nenhum arquivo selecionado</em>
-        </label>
-
-        <label class="upload-card">
-          <input type="file" name="anexo_sintegra_card" accept=".pdf,.png,.jpg,.jpeg,.webp" required />
-          <span class="upload-icon">+</span>
-          <strong>Sintegra Card *</strong>
-          <small>Clique para anexar o Sintegra Card</small>
-          <em data-file-name>Nenhum arquivo selecionado</em>
-        </label>
+        {% for upload_key, upload_label in UPLOAD_FIELDS.items() %}
+          <label class="upload-card">
+            <input type="file" name="{{ upload_key }}" accept=".pdf,.png,.jpg,.jpeg,.webp" required />
+            <span class="upload-icon">+</span>
+            <strong>{{ upload_label }} *</strong>
+            <small>Clique para anexar {{ upload_label|lower }}</small>
+            <em data-file-name>Nenhum arquivo selecionado</em>
+          </label>
+        {% endfor %}
       </div>
     </section>
 
