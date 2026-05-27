@@ -229,12 +229,6 @@ FIELD_SECTIONS = [
                 "type": "email",
                 "required": True,
             },
-            {
-                "name": "prazo_pagamento",
-                "label": "Prazo de pagamento",
-                "type": "text",
-                "required": True,
-            },
         ],
     },
     {
