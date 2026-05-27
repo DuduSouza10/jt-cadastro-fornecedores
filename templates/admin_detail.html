@@ -51,6 +51,15 @@ Anexos
     <div class="detail-action-buttons">
       <button type="button" class="btn btn-primary" data-copy="{{ texto_completo|trim|e }}">Copiar tudo</button>
       <a class="btn btn-dark" href="{{ url_for('admin_export_xlsx', start_date=submission.created_at[:10], end_date=submission.created_at[:10]) }}">XLSX deste dia</a>
+      <form
+        class="delete-form detail-delete-form"
+        method="POST"
+        action="{{ url_for('admin_delete_submission', submission_id=submission.id) }}"
+        data-confirm-delete
+        data-company="{{ submission.data.get('nome_empresa', 'este cadastro')|e }}"
+      >
+        <button type="submit" class="btn btn-danger">Deletar cadastro</button>
+      </form>
     </div>
   </section>
 

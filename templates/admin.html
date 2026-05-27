@@ -141,6 +141,15 @@ Feishu: {{ item.data.get('feishu_nome', '-') }}{% endset %}
                       <div class="table-actions">
                         <a class="table-link" href="{{ url_for('admin_submission_detail', submission_id=item.id) }}">Ver detalhes</a>
                         <button type="button" class="copy-btn mini" data-copy="{{ resumo|trim|e }}">Copiar resumo</button>
+                        <form
+                          class="delete-form"
+                          method="POST"
+                          action="{{ url_for('admin_delete_submission', submission_id=item.id) }}"
+                          data-confirm-delete
+                          data-company="{{ item.data.get('nome_empresa', 'este cadastro')|e }}"
+                        >
+                          <button type="submit" class="delete-btn mini">Deletar</button>
+                        </form>
                       </div>
                     </td>
                   </tr>

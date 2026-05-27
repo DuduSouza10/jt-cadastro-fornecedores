@@ -1,10 +1,12 @@
 (function () {
   const sections = Array.from(document.querySelectorAll("[data-section]"));
+  const stepNav = document.querySelector(".step-nav");
   const pills = Array.from(document.querySelectorAll(".step-pill"));
   const btnPrev = document.getElementById("btnPrev");
   const btnNext = document.getElementById("btnNext");
   const btnSubmit = document.getElementById("btnSubmit");
   const formShell = document.querySelector(".form-shell");
+  const hasWizard = Boolean(stepNav && pills.length && btnNext && btnSubmit);
 
   let currentIndex = 0;
 
@@ -24,7 +26,7 @@
   }
 
   function showSection(index, shouldScroll) {
-    if (!sections.length) return;
+    if (!sections.length || !hasWizard) return;
 
     currentIndex = Math.max(0, Math.min(index, sections.length - 1));
 
@@ -81,24 +83,29 @@
     return true;
   }
 
-  pills.forEach((pill, index) => {
-    pill.addEventListener("click", () => {
-      showSection(index, true);
+  if (hasWizard) {
+    pills.forEach((pill, index) => {
+      pill.addEventListener("click", () => {
+        showSection(index, true);
+      });
     });
-  });
 
-  if (btnPrev) {
     btnPrev.addEventListener("click", () => {
       showSection(currentIndex - 1, true);
     });
-  }
 
-  if (btnNext) {
     btnNext.addEventListener("click", () => {
       if (validateCurrentSection()) {
         showSection(currentIndex + 1, true);
       }
     });
+
+    showSection(0, false);
+  } else {
+    sections.forEach((section) => section.classList.add("active"));
+    if (btnPrev) btnPrev.style.display = "none";
+    if (btnNext) btnNext.style.display = "none";
+    if (btnSubmit) btnSubmit.style.display = "inline-flex";
   }
 
   function onlyNumbers(value) {
@@ -220,6 +227,20 @@
     });
   });
 
+  document.querySelectorAll("[data-confirm-delete]").forEach((form) => {
+    form.addEventListener("submit", (event) => {
+      const company = form.dataset.company || "este cadastro";
+      const confirmed = window.confirm(
+        `Tem certeza que deseja deletar ${company}? Essa ação remove o envio do painel e tenta excluir os anexos do Cloudflare R2/local.`
+      );
+
+      if (!confirmed) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    });
+  });
+
   document.querySelectorAll("form").forEach((form) => {
     form.addEventListener("submit", (event) => {
       const button = event.submitter || form.querySelector('button[type="submit"]');
@@ -228,7 +249,14 @@
 
       button.disabled = true;
       button.dataset.originalText = button.textContent;
-      button.textContent = form.classList.contains("export-form") ? "Processando..." : "Enviando...";
+
+      if (form.classList.contains("export-form")) {
+        button.textContent = "Processando...";
+      } else if (form.hasAttribute("data-confirm-delete")) {
+        button.textContent = "Deletando...";
+      } else {
+        button.textContent = "Enviando...";
+      }
 
       if (form.classList.contains("export-form")) {
         setTimeout(() => {
@@ -238,6 +266,4 @@
       }
     });
   });
-
-  showSection(0, false);
 })();

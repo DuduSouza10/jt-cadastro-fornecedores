@@ -2042,3 +2042,83 @@ body {
     display: none !important;
   }
 }
+
+/* ===== Formulário sem etapas no topo + ação de deletar no admin ===== */
+.simple-form .form-section {
+  display: block;
+  padding: 12px 4px 0;
+}
+
+.simple-form .form-section + .form-section {
+  margin-top: 26px;
+  padding-top: 26px;
+  border-top: 1px solid rgba(23, 23, 27, 0.1);
+}
+
+.simple-form .single-submit-actions {
+  justify-content: center;
+}
+
+.simple-form #btnSubmit {
+  display: inline-flex;
+  min-width: 230px;
+}
+
+.delete-form {
+  margin: 0;
+  display: inline-flex;
+}
+
+.delete-btn,
+.btn-danger {
+  border: 0;
+  background: #8f000b;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 900;
+  box-shadow: 0 12px 28px rgba(143, 0, 11, 0.18);
+  transition: transform .22s var(--ease), background .22s var(--ease), box-shadow .22s var(--ease);
+}
+
+.delete-btn:hover,
+.btn-danger:hover {
+  transform: translateY(-2px);
+  background: #650008;
+  box-shadow: 0 16px 34px rgba(101, 0, 8, 0.24);
+}
+
+.delete-btn.mini {
+  min-height: 30px;
+  border-radius: 999px;
+  padding: 0 10px;
+  font-size: 11px;
+}
+
+.btn-danger {
+  min-height: 50px;
+  border-radius: 999px;
+  padding: 0 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.detail-delete-form {
+  display: inline-flex;
+}
+
+@media (max-width: 720px) {
+  .simple-form .section-heading {
+    text-align: center;
+  }
+
+  .simple-form .single-submit-actions,
+  .simple-form #btnSubmit,
+  .delete-form,
+  .delete-form .delete-btn,
+  .detail-delete-form,
+  .detail-delete-form .btn-danger {
+    width: 100%;
+  }
+}

@@ -14,12 +14,12 @@
     <div>
       <span class="eyebrow">Franqueados J&amp;T</span>
       <h1>Preenchimento de Dados - Franqueados J&amp;T</h1>
-      <p>Preencha as informações do franqueado, dados financeiros, operação, Feishu e anexos obrigatórios.</p>
+      <p>Preencha as informações do franqueado, dados financeiros, operação, testemunha contratada, Feishu e anexos obrigatórios.</p>
     </div>
 
     <div class="hero-status">
-      <strong>5</strong>
-      <span>etapas organizadas</span>
+      <strong>J&amp;T</strong>
+      <span>cadastro digital</span>
     </div>
   </section>
 
@@ -33,26 +33,12 @@
     {% endif %}
   {% endwith %}
 
-  <form id="jtForm" class="form-shell reveal" method="POST" action="{{ url_for('submit') }}" enctype="multipart/form-data" novalidate>
-    <nav class="step-nav" aria-label="Navegação das etapas">
-      {% for section in FIELD_SECTIONS %}
-        <button type="button" class="step-pill {% if loop.first %}active{% endif %}" data-target="{{ section.key }}">
-          <span>{{ loop.index }}</span>
-          {{ section.title }}
-        </button>
-      {% endfor %}
-
-      <button type="button" class="step-pill" data-target="anexos">
-        <span>{{ FIELD_SECTIONS|length + 1 }}</span>
-        Anexos
-      </button>
-    </nav>
-
+  <form id="jtForm" class="form-shell simple-form reveal" method="POST" action="{{ url_for('submit') }}" enctype="multipart/form-data">
     {% for section in FIELD_SECTIONS %}
-      <section class="form-section" id="{{ section.key }}" data-section>
+      <section class="form-section active" id="{{ section.key }}" data-section>
         <div class="section-heading">
           <div>
-            <span class="section-index">Etapa {{ loop.index }}</span>
+            <span class="section-index">Seção {{ loop.index }}</span>
             <h2>{{ section.title }}</h2>
             <p>{{ section.description }}</p>
           </div>
@@ -95,10 +81,10 @@
       </section>
     {% endfor %}
 
-    <section class="form-section" id="anexos" data-section>
+    <section class="form-section active" id="anexos" data-section>
       <div class="section-heading">
         <div>
-          <span class="section-index">Etapa {{ FIELD_SECTIONS|length + 1 }}</span>
+          <span class="section-index">Anexos</span>
           <h2>Anexos obrigatórios</h2>
           <p>Envie todos os anexos necessários. Aceita PDF, PNG, JPG, JPEG ou WEBP.</p>
         </div>
@@ -117,9 +103,7 @@
       </div>
     </section>
 
-    <div class="form-actions">
-      <button type="button" class="btn btn-ghost" id="btnPrev">Voltar</button>
-      <button type="button" class="btn btn-dark" id="btnNext">Próxima etapa</button>
+    <div class="form-actions single-submit-actions">
       <button type="submit" class="btn btn-primary" id="btnSubmit">Enviar cadastro</button>
     </div>
   </form>

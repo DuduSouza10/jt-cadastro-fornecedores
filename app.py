@@ -232,6 +232,41 @@ FIELD_SECTIONS = [
         ],
     },
     {
+        "key": "testemunha_contratada",
+        "title": "3 - Testemunha Contratada (Contrato)",
+        "description": "Indicar uma testemunha vinculada à empresa contratada, que não seja sócia da pessoa jurídica. Importante: a testemunha não poderá ser nenhum dos sócios constantes no contrato social.",
+        "fields": [
+            {
+                "name": "testemunha_nome_completo",
+                "label": "Nome Completo",
+                "type": "text",
+                "required": True,
+                "wide": True,
+            },
+            {
+                "name": "testemunha_cpf",
+                "label": "CPF",
+                "type": "text",
+                "required": True,
+                "mask": "cpf",
+            },
+            {
+                "name": "testemunha_email",
+                "label": "Email",
+                "type": "email",
+                "required": True,
+            },
+            {
+                "name": "testemunha_telefone_contato",
+                "label": "Telefone para contato",
+                "type": "text",
+                "required": True,
+                "mask": "phone",
+            },
+        ],
+    },
+
+    {
         "key": "franqueado_ativado",
         "title": "Franqueado ativado",
         "description": "Dados operacionais, atendimento e rota dedicada.",
@@ -430,6 +465,12 @@ def github_configured() -> bool:
     )
 
 
+def github_submission_path(submission: Dict) -> str:
+    data_path = os.getenv("GITHUB_DATA_PATH", "submissions")
+    filename = f"{submission['created_at'].replace(':', '-')}_{submission['id']}.json"
+    return f"{data_path}/{submission['created_year']}/{submission['created_month']}/{submission['created_day']}/{filename}"
+
+
 def r2_configured() -> bool:
     return bool(
         boto3
@@ -447,10 +488,7 @@ def push_submission_to_github(submission: Dict) -> bool:
     token = os.getenv("GITHUB_TOKEN", "")
     repo = os.getenv("GITHUB_REPO", "")
     branch = os.getenv("GITHUB_BRANCH", "main")
-    data_path = os.getenv("GITHUB_DATA_PATH", "submissions")
-
-    filename = f"{submission['created_at'].replace(':', '-')}_{submission['id']}.json"
-    path = f"{data_path}/{submission['created_year']}/{submission['created_month']}/{submission['created_day']}/{filename}"
+    path = github_submission_path(submission)
 
     api_url = f"https://api.github.com/repos/{repo}/contents/{path}"
 
@@ -473,6 +511,116 @@ def push_submission_to_github(submission: Dict) -> bool:
         return response.status_code in {200, 201}
     except requests.RequestException:
         return False
+
+
+def delete_submission_from_github(submission: Dict) -> bool:
+    if not github_configured():
+        return False
+
+    token = os.getenv("GITHUB_TOKEN", "")
+    repo = os.getenv("GITHUB_REPO", "")
+    branch = os.getenv("GITHUB_BRANCH", "main")
+    path = github_submission_path(submission)
+    api_url = f"https://api.github.com/repos/{repo}/contents/{path}"
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+    }
+
+    try:
+        get_response = requests.get(api_url, headers=headers, params={"ref": branch}, timeout=25)
+
+        if get_response.status_code != 200:
+            return False
+
+        sha = get_response.json().get("sha")
+
+        if not sha:
+            return False
+
+        payload = {
+            "message": f"Remove preenchimento de dados J&T - {submission['id']}",
+            "sha": sha,
+            "branch": branch,
+        }
+
+        delete_response = requests.delete(api_url, headers=headers, json=payload, timeout=25)
+        return delete_response.status_code == 200
+    except requests.RequestException:
+        return False
+
+
+def delete_upload_r2(key: str) -> bool:
+    if not key or not r2_configured():
+        return False
+
+    boto3_module = boto3
+
+    if boto3_module is None:
+        return False
+
+    account_id = os.getenv("CLOUDFLARE_R2_ACCOUNT_ID")
+    bucket = os.getenv("CLOUDFLARE_R2_BUCKET")
+
+    if not account_id or not bucket:
+        return False
+
+    endpoint_url = f"https://{account_id}.r2.cloudflarestorage.com"
+
+    try:
+        client = boto3_module.client(
+            "s3",
+            endpoint_url=endpoint_url,
+            aws_access_key_id=os.getenv("CLOUDFLARE_R2_ACCESS_KEY_ID"),
+            aws_secret_access_key=os.getenv("CLOUDFLARE_R2_SECRET_ACCESS_KEY"),
+            region_name="auto",
+        )
+
+        client.delete_object(Bucket=bucket, Key=key)
+        return True
+    except Exception:
+        return False
+
+
+def delete_upload_local(path: str) -> bool:
+    if not path:
+        return False
+
+    try:
+        full_path = (UPLOAD_DIR / path).resolve()
+        upload_root = UPLOAD_DIR.resolve()
+
+        if not str(full_path).startswith(str(upload_root)):
+            return False
+
+        if full_path.exists() and full_path.is_file():
+            full_path.unlink()
+            return True
+    except OSError:
+        return False
+
+    return False
+
+
+def delete_attachment_from_storage(attachment: Dict) -> bool:
+    storage = attachment.get("storage", "")
+    path = attachment.get("path", "")
+
+    if storage == "cloudflare_r2":
+        return delete_upload_r2(path)
+
+    return delete_upload_local(path)
+
+
+def delete_submission_attachments(submission: Dict) -> int:
+    deleted_count = 0
+
+    for attachment in submission.get("attachments", {}).values():
+        if delete_attachment_from_storage(attachment):
+            deleted_count += 1
+
+    return deleted_count
 
 
 def save_upload_local(file_storage, submission_id: str, dt: datetime, upload_key: str) -> Dict:
@@ -1000,6 +1148,37 @@ def admin_export_xlsx():
         download_name=filename,
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
+
+
+@app.route("/admin/submission/<submission_id>/delete", methods=["POST"])
+@admin_required
+def admin_delete_submission(submission_id: str):
+    submissions = load_submissions()
+    submission_to_delete = None
+    remaining_submissions = []
+
+    for submission in submissions:
+        if submission.get("id") == submission_id:
+            submission_to_delete = submission
+        else:
+            remaining_submissions.append(submission)
+
+    if not submission_to_delete:
+        flash("Cadastro não encontrado ou já deletado.", "error")
+        return redirect(url_for("admin_panel"))
+
+    deleted_attachments = delete_submission_attachments(submission_to_delete)
+    github_deleted = delete_submission_from_github(submission_to_delete)
+
+    save_submissions(remaining_submissions)
+
+    github_message = " Backup do GitHub removido." if github_deleted else ""
+    flash(
+        f"Cadastro {submission_id} deletado. {deleted_attachments} anexo(s) removido(s) do armazenamento disponível." + github_message,
+        "success",
+    )
+
+    return redirect(url_for("admin_panel"))
 
 
 @app.route("/admin/login", methods=["GET", "POST"])
