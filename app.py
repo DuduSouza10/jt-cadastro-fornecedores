@@ -40,7 +40,7 @@ except ImportError:
 
 load_dotenv()
 
-APP_NAME = "Cadastro de Fornecedores | J&T Express"
+APP_NAME = "Preenchimento de Dados - Franqueados J&T"
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
@@ -139,7 +139,7 @@ FIELD_SECTIONS = [
             },
             {
                 "name": "endereco_fornecedor",
-                "label": "Endereço do fornecedor",
+                "label": "Endereço do franqueado",
                 "type": "text",
                 "required": True,
                 "wide": True,
@@ -315,7 +315,7 @@ FIELD_SECTIONS = [
     },
     {
         "key": "fornecedor_registrado",
-        "title": "Fornecedor registrado",
+        "title": "Franqueado registrado",
         "description": "Dados bancários, proprietário e chave PIX para registro da empresa.",
         "fields": [
             {
@@ -458,7 +458,7 @@ def push_submission_to_github(submission: Dict) -> bool:
     encoded_content = base64.b64encode(content.encode("utf-8")).decode("utf-8")
 
     payload = {
-        "message": f"Novo cadastro J&T - {submission['id']}",
+        "message": f"Novo preenchimento de dados J&T - {submission['id']}",
         "content": encoded_content,
         "branch": branch,
     }
@@ -768,7 +768,7 @@ def build_xlsx(submissions: List[Dict], start_date: str = "", end_date: str = ""
 
     headers = get_export_headers()
 
-    title = "Relatório de Cadastros J&T"
+    title = "Relatório - Preenchimento de Dados - Franqueados J&T"
     if start_date or end_date:
         title += f" | Período: {start_date or 'início'} até {end_date or 'hoje'}"
 
@@ -992,7 +992,7 @@ def admin_export_xlsx():
 
     filename_start = start_date or "inicio"
     filename_end = end_date or "hoje"
-    filename = f"cadastros-jt-{filename_start}-a-{filename_end}.xlsx"
+    filename = f"preenchimento-franqueados-jt-{filename_start}-a-{filename_end}.xlsx"
 
     return send_file(
         output,

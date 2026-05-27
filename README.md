@@ -1,6 +1,6 @@
-# Cadastro de Dados J&T
+# Preenchimento de Dados - Franqueados J&T
 
-Site Flask para preenchimento de dados de fornecedor/franqueado, com tela admin protegida, upload de anexos e persistência opcional em GitHub + Cloudflare R2.
+Site Flask para Preenchimento de Dados - Franqueados J&T, com tela admin protegida, upload de anexos e persistência opcional em GitHub + Cloudflare R2.
 
 ## O que vem pronto
 
@@ -9,7 +9,7 @@ Site Flask para preenchimento de dados de fornecedor/franqueado, com tela admin 
   - Registro de cliente
   - Franqueado ativado
   - Criação de Feishu
-  - Fornecedor Registrado (Empresa)
+  - Franqueado registrado
   - Anexos obrigatórios: Cartão CNPJ, Cartão Social / CCMEI, Comprovante Sintegra e Inscrição Municipal
 - Tela admin com login e senha.
 - Listagem por dia/mês/ano, mantendo ordem de preenchimento dentro de cada data.
