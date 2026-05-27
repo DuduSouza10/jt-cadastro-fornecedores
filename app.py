@@ -207,7 +207,7 @@ FIELD_SECTIONS = [
     {
         "key": "registro_cliente",
         "title": "Registro de cliente",
-        "description": "Informações financeiras e prazo de pagamento do cliente.",
+        "description": "Informações do responsável financeiro do cliente.",
         "fields": [
             {
                 "name": "nome_responsavel_financeiro",
