@@ -47,10 +47,13 @@
 
                 <div class="report-fields">
                   {% for field in section.fields %}
-                    <div class="report-item">
-                      <span>{{ field.label }}</span>
-                      <strong>{{ item.data.get(field.name, '-') or '-' }}</strong>
-                    </div>
+                    {% set field_value = item.data.get(field.name, '') %}
+                    {% if not field.show_if_filled or field_value %}
+                      <div class="report-item">
+                        <span>{{ field.label }}</span>
+                        <strong>{{ field_value or '-' }}</strong>
+                      </div>
+                    {% endif %}
                   {% endfor %}
                 </div>
               </section>

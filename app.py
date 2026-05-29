@@ -133,7 +133,7 @@ FIELD_SECTIONS = [
             },
             {
                 "name": "abreviacao_empresa",
-                "label": "Abreviação da empresa",
+                "label": "Nome Fantasia",
                 "type": "text",
                 "required": True,
             },
@@ -152,19 +152,6 @@ FIELD_SECTIONS = [
                 "options": UF_OPTIONS,
             },
             {
-                "name": "codigo_cidade",
-                "label": "Código da Cidade",
-                "type": "text",
-                "required": True,
-            },
-            {
-                "name": "continente",
-                "label": "Continente",
-                "type": "text",
-                "required": True,
-                "value": "América do Sul",
-            },
-            {
                 "name": "inscricao_estadual",
                 "label": "Inscrição Estadual (I.E.)",
                 "type": "text",
@@ -172,7 +159,7 @@ FIELD_SECTIONS = [
             },
             {
                 "name": "cidade_origem",
-                "label": "Cidade de origem",
+                "label": "Cidade Franquia",
                 "type": "text",
                 "required": True,
             },
@@ -184,7 +171,7 @@ FIELD_SECTIONS = [
             },
             {
                 "name": "codigo_postal",
-                "label": "Código postal",
+                "label": "CEP",
                 "type": "text",
                 "required": True,
                 "mask": "cep",
@@ -206,7 +193,7 @@ FIELD_SECTIONS = [
     },
     {
         "key": "registro_cliente",
-        "title": "Registro de cliente",
+        "title": "Responsável Financeiro",
         "description": "Informações do responsável financeiro do cliente.",
         "fields": [
             {
@@ -234,7 +221,15 @@ FIELD_SECTIONS = [
     {
         "key": "testemunha_contratada",
         "title": "3 - Testemunha Contratada (Contrato)",
-        "description": "Indicar uma testemunha vinculada à empresa contratada, que não seja sócia da pessoa jurídica. Importante: a testemunha não poderá ser nenhum dos sócios constantes no contrato social.",
+        "description": "Indicar uma testemunha vinculada à empresa contratada, que não seja sócia da pessoa jurídica.",
+        "description_html": """
+            <p>Indicar uma testemunha vinculada à empresa contratada, que não seja sócia da pessoa jurídica.</p>
+            <p class=\"section-description-strong\">Pontos importantes:</p>
+            <ul class=\"section-description-list section-description-strong\">
+              <li>A testemunha não poderá ser nenhum dos sócios constantes no contrato social.</li>
+              <li>O email da testemunha precisa conter o nome dela (ex: adrianoxxxxxx@gmail.com).</li>
+            </ul>
+        """,
         "fields": [
             {
                 "name": "testemunha_nome_completo",
@@ -265,10 +260,9 @@ FIELD_SECTIONS = [
             },
         ],
     },
-
     {
         "key": "franqueado_ativado",
-        "title": "Franqueado ativado",
+        "title": "Responsável pela Franquia",
         "description": "Dados operacionais, atendimento e rota dedicada.",
         "fields": [
             {
@@ -350,18 +344,12 @@ FIELD_SECTIONS = [
     },
     {
         "key": "fornecedor_registrado",
-        "title": "Franqueado registrado",
-        "description": "Dados bancários, proprietário e chave PIX para registro da empresa.",
+        "title": "Dados Bancários",
+        "description": "Dados bancários, titular da conta e chave PIX para registro da empresa.",
         "fields": [
             {
-                "name": "formas_pagamento",
-                "label": "Formas de pagamento",
-                "type": "text",
-                "required": True,
-            },
-            {
                 "name": "nome_proprietario",
-                "label": "Nome do proprietário",
+                "label": "Titular da Conta",
                 "type": "text",
                 "required": True,
                 "wide": True,
@@ -373,6 +361,15 @@ FIELD_SECTIONS = [
                 "required": True,
                 "options": BANCO_OPTIONS,
                 "wide": True,
+            },
+            {
+                "name": "codigo_banco_outro",
+                "label": "Código do banco não listado",
+                "type": "text",
+                "required": False,
+                "wide": True,
+                "show_if_filled": True,
+                "placeholder": "Preencha somente se o banco não estiver listado acima",
             },
             {
                 "name": "numero_agencia",
@@ -416,8 +413,13 @@ UPLOAD_FIELDS = {
     "anexo_cnpj": "Cartão CNPJ",
     "anexo_cartao_social_ccmei": "Cartão Social / CCMEI",
     "anexo_sintegra_card": "Comprovante Sintegra",
-    "anexo_inscricao_municipal": "Inscrição Municipal",
 }
+
+UPLOAD_LINKS = {
+    "anexo_cnpj": "https://solucoes.receita.fazenda.gov.br/Servicos/cnpjreva/",
+    "anexo_sintegra_card": "http://www.sintegra.gov.br/",
+}
+
 
 
 def safe_date_path(dt: datetime) -> Path:
@@ -849,7 +851,22 @@ def filter_submissions_by_period(submissions: List[Dict], start_date: str, end_d
     return sorted(filtered, key=lambda item: item.get("created_at", ""))
 
 
-def get_export_headers() -> List[Dict]:
+def should_include_field_for_export(field: Dict, submissions: Optional[List[Dict]] = None) -> bool:
+    if not field.get("show_if_filled"):
+        return True
+
+    if submissions is None:
+        return True
+
+    field_name = field.get("name", "")
+
+    return any(
+        str(submission.get("data", {}).get(field_name, "")).strip()
+        for submission in submissions
+    )
+
+
+def get_export_headers(submissions: Optional[List[Dict]] = None) -> List[Dict]:
     headers = [
         {"section": "Controle", "label": "ID", "name": "__id"},
         {"section": "Controle", "label": "Data de preenchimento", "name": "__created_date"},
@@ -858,6 +875,9 @@ def get_export_headers() -> List[Dict]:
 
     for section in FIELD_SECTIONS:
         for field in section["fields"]:
+            if not should_include_field_for_export(field, submissions):
+                continue
+
             headers.append({
                 "section": section["title"],
                 "label": field["label"],
@@ -914,7 +934,7 @@ def build_xlsx(submissions: List[Dict], start_date: str = "", end_date: str = ""
 
     sheet.title = "Cadastros"
 
-    headers = get_export_headers()
+    headers = get_export_headers(submissions)
 
     title = "Relatório - Preenchimento de Dados - Franqueados J&T"
     if start_date or end_date:
@@ -985,6 +1005,7 @@ def inject_globals():
         "APP_NAME": APP_NAME,
         "FIELD_SECTIONS": FIELD_SECTIONS,
         "UPLOAD_FIELDS": UPLOAD_FIELDS,
+        "UPLOAD_LINKS": UPLOAD_LINKS,
     }
 
 

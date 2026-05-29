@@ -6,11 +6,11 @@ Site Flask para Preenchimento de Dados - Franqueados J&T, com tela admin protegi
 
 - Formulário com todos os campos solicitados, organizado em etapas:
   - Informações básicas
-  - Registro de cliente
-  - Franqueado ativado
+  - Responsável Financeiro
+  - Responsável pela Franquia
   - Criação de Feishu
-  - Franqueado registrado
-  - Anexos obrigatórios: Cartão CNPJ, Cartão Social / CCMEI, Comprovante Sintegra e Inscrição Municipal
+  - Dados Bancários
+  - Anexos obrigatórios: Cartão CNPJ, Cartão Social / CCMEI e Comprovante Sintegra
 - Tela admin com login e senha.
 - Listagem por dia/mês/ano, mantendo ordem de preenchimento dentro de cada data.
 - Visualização detalhada de cada cadastro.
@@ -94,7 +94,7 @@ Permissões mínimas do token: acesso de escrita ao repositório onde os JSON se
 
 ## Cloudflare R2 para anexos
 
-Se configurado, os anexos Cartão CNPJ, Cartão Social / CCMEI, Comprovante Sintegra e Inscrição Municipal serão enviados para o bucket R2.
+Se configurado, os anexos Cartão CNPJ, Cartão Social / CCMEI e Comprovante Sintegra serão enviados para o bucket R2.
 
 Variáveis necessárias:
 

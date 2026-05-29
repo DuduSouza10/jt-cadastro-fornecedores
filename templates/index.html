@@ -16,11 +16,6 @@
       <h1>Preenchimento de Dados - Franqueados J&amp;T</h1>
       <p>Preencha as informações do franqueado, dados financeiros, operação, testemunha contratada, Feishu e anexos obrigatórios.</p>
     </div>
-
-    <div class="hero-status">
-      <strong>J&amp;T</strong>
-      <span>cadastro digital</span>
-    </div>
   </section>
 
   {% with messages = get_flashed_messages(with_categories=true) %}
@@ -40,7 +35,11 @@
           <div>
             <span class="section-index">Seção {{ loop.index }}</span>
             <h2>{{ section.title }}</h2>
-            <p>{{ section.description }}</p>
+            {% if section.description_html %}
+              <div class="section-description-html">{{ section.description_html|safe }}</div>
+            {% else %}
+              <p>{{ section.description }}</p>
+            {% endif %}
           </div>
         </div>
 
@@ -68,7 +67,7 @@
                   <input
                     type="{{ field.type }}"
                     name="{{ field.name }}"
-                    placeholder="Digite {{ field.label|lower }}"
+                    placeholder="{{ field.placeholder if field.placeholder else ('Digite ' ~ field.label|lower) }}"
                     value="{{ field.value|default('') }}"
                     {% if field.required %}required{% endif %}
                     {% if field.mask %}data-mask="{{ field.mask }}"{% endif %}
@@ -92,13 +91,22 @@
 
       <div class="upload-grid">
         {% for upload_key, upload_label in UPLOAD_FIELDS.items() %}
-          <label class="upload-card">
-            <input type="file" name="{{ upload_key }}" accept=".pdf,.png,.jpg,.jpeg,.webp" required />
-            <span class="upload-icon">+</span>
-            <strong>{{ upload_label }} *</strong>
-            <small>Clique para anexar {{ upload_label|lower }}</small>
-            <em data-file-name>Nenhum arquivo selecionado</em>
-          </label>
+          <div class="upload-item">
+            {% set helper_link = UPLOAD_LINKS.get(upload_key) %}
+            {% if helper_link %}
+              <a class="upload-helper-link" href="{{ helper_link }}" target="_blank" rel="noopener">
+                Consultar {{ upload_label }} ↗
+              </a>
+            {% endif %}
+
+            <label class="upload-card">
+              <input type="file" name="{{ upload_key }}" accept=".pdf,.png,.jpg,.jpeg,.webp" required />
+              <span class="upload-icon">+</span>
+              <strong>{{ upload_label }} *</strong>
+              <small>Clique para anexar {{ upload_label|lower }}</small>
+              <em data-file-name>Nenhum arquivo selecionado</em>
+            </label>
+          </div>
         {% endfor %}
       </div>
     </section>

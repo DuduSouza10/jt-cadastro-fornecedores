@@ -34,8 +34,8 @@ Horário de preenchimento: {{ submission.created_time }}
 {% for section in FIELD_SECTIONS %}
 
 {{ section.title }}
-{% for field in section.fields %}{{ field.label }}: {{ submission.data.get(field.name, '-') }}
-{% endfor %}{% endfor %}
+{% for field in section.fields %}{% set value = submission.data.get(field.name, '') %}{% if not field.show_if_filled or value %}{{ field.label }}: {{ value or '-' }}
+{% endif %}{% endfor %}{% endfor %}
 
 Anexos
 {% for key, label in UPLOAD_FIELDS.items() %}{% set attachment = submission.attachments.get(key) %}{{ label }}: {{ attachment.original_name if attachment else 'Não enviado' }}{% if attachment and (attachment.download_url or attachment.url) %} | {{ attachment.download_url or attachment.url }}{% endif %}
@@ -71,22 +71,24 @@ Anexos
         <div class="detail-fields">
           {% for field in section.fields %}
             {% set field_value = submission.data.get(field.name, '') %}
-            <div class="detail-item {% if field.wide %}wide{% endif %}">
-              <span>{{ field.label }}</span>
+            {% if not field.show_if_filled or field_value %}
+              <div class="detail-item {% if field.wide %}wide{% endif %}">
+                <span>{{ field.label }}</span>
 
-              <div class="copy-row">
-                <strong>{{ field_value or '-' }}</strong>
+                <div class="copy-row">
+                  <strong>{{ field_value or '-' }}</strong>
 
-                <button
-                  type="button"
-                  class="copy-btn"
-                  data-copy="{{ field_value or '-' }}"
-                  title="Copiar resposta"
-                >
-                  Copiar
-                </button>
+                  <button
+                    type="button"
+                    class="copy-btn"
+                    data-copy="{{ field_value or '-' }}"
+                    title="Copiar resposta"
+                  >
+                    Copiar
+                  </button>
+                </div>
               </div>
-            </div>
+            {% endif %}
           {% endfor %}
         </div>
       </article>
