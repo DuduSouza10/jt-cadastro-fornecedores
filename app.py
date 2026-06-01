@@ -410,9 +410,9 @@ FIELD_SECTIONS = [
 
 
 UPLOAD_FIELDS = {
-    "anexo_cnpj": "Cartão CNPJ",
-    "anexo_cartao_social_ccmei": "Cartão Social / CCMEI",
-    "anexo_sintegra_card": "Comprovante Sintegra",
+    "cartao_cnpj": "Cartão CNPJ",
+    "cartao_social_ccmei": "Cartão Social / CCMEI",
+    "comprovante_sintegra": "Comprovante Sintegra",
 }
 
 UPLOAD_LINKS = {
@@ -420,7 +420,6 @@ UPLOAD_LINKS = {
     "cartao_social_ccmei": "https://mei.receita.economia.gov.br/certificado/login?nextRoute=%2Fconsulta",
     "comprovante_sintegra": "http://www.sintegra.gov.br/",
 }
-
 
 
 def safe_date_path(dt: datetime) -> Path:
