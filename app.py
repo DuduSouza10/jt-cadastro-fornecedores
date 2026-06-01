@@ -221,9 +221,9 @@ FIELD_SECTIONS = [
     {
         "key": "testemunha_contratada",
         "title": "3 - Testemunha Contratada (Contrato)",
-        "description": "Indicar uma testemunha vinculada à empresa contratada, que não seja sócia da pessoa jurídica.",
+        "description": "Indique uma testemunha que não conste no contrato principal e que não seja você mesmo.",
         "description_html": """
-            <p>Indicar uma testemunha vinculada à empresa contratada, que não seja sócia da pessoa jurídica.</p>
+            <p>Indique uma testemunha que não conste no contrato principal e que não seja você mesmo.</p>
             <p class=\"section-description-strong\">Pontos importantes:</p>
             <ul class=\"section-description-list section-description-strong\">
               <li>A testemunha não poderá ser nenhum dos sócios constantes no contrato social.</li>
