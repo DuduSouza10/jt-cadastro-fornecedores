@@ -221,9 +221,9 @@ FIELD_SECTIONS = [
     {
         "key": "testemunha_contratada",
         "title": "3 - Testemunha Contratada (Contrato)",
-        "description": "Indique uma testemunha que não conste no contrato principal.",
+        "description": "Indique uma testemunha que não conste no contrato principal e que não seja você mesmo.",
         "description_html": """
-            <p>Indique uma testemunha que não conste no contrato principal.</p>
+            <p>Indique uma testemunha que não conste no contrato principal e que não seja você mesmo.</p>
             <p class=\"section-description-strong\">Pontos importantes:</p>
             <ul class=\"section-description-list section-description-strong\">
               <li>A testemunha não poderá ser nenhum dos sócios constantes no contrato social.</li>
@@ -416,8 +416,9 @@ UPLOAD_FIELDS = {
 }
 
 UPLOAD_LINKS = {
-    "anexo_cnpj": "https://solucoes.receita.fazenda.gov.br/Servicos/cnpjreva/",
-    "anexo_sintegra_card": "http://www.sintegra.gov.br/",
+    "cartao_cnpj": "https://solucoes.receita.fazenda.gov.br/Servicos/cnpjreva/",
+    "cartao_social_ccmei": "https://mei.receita.economia.gov.br/certificado/login?nextRoute=%2Fconsulta",
+    "comprovante_sintegra": "http://www.sintegra.gov.br/",
 }
 
 
